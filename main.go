@@ -24,22 +24,22 @@ func menuAccountService(user users.Users) {
 		fmt.Println("99. Logout")
 		fmt.Print("Masukkan pilihan:")
 		fmt.Scanln(&input)
-	}
-	switch input {
-	case 1:
-		fmt.Println("ID: ", user.ID)
-		fmt.Println("Nama: ", user.Nama)
-		fmt.Println("No Hp: ", user.HP)
-		fmt.Println("Alamat: ", user.Alamat)
-		fmt.Println("Created account: ", user.CreatedAt)
-		fmt.Println("Updated account: ", user.UpdatedAt)
-	case 2:
-	case 3:
-	case 4:
-	case 5:
-	case 6:
-	case 7:
-	case 8:
+		switch input {
+		case 1:
+			fmt.Println("ID: ", user.ID)
+			fmt.Println("Nama: ", user.Nama)
+			fmt.Println("No Hp: ", user.HP)
+			fmt.Println("Alamat: ", user.Alamat)
+			fmt.Println("Created account: ", user.CreatedAt)
+			fmt.Println("Updated account: ", user.UpdatedAt)
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		}
 	}
 	fmt.Println("Terima kasih telah bertransaksi,", user)
 }
