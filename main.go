@@ -49,18 +49,22 @@ func main() {
 				fmt.Println("selamat anda telah terdaftar")
 			}
 		case 2:
-			user := login()
-			if user == "" {
-				fmt.Println("Login Gagal!!")
+			user, success, err := login()
+			if err != nil {
+				fmt.Println("Terjadi error: ", err)
+			} else if !success {
+				fmt.Println("no telp atau password salah!")
 			} else {
+				fmt.Println("Selamat Datang", user.Nama)
 				menuAccountService(user)
 			}
+
 		}
 	}
 
 }
 
-func login() string {
+func login() (users.Users, bool, error) {
 	var hp string
 	var password string
 	var loggedIn users.Users
@@ -68,14 +72,7 @@ func login() string {
 	fmt.Scanln(&hp)
 	fmt.Print("Masukkan Password : ")
 	fmt.Scanln(&password)
-	loggedIn, success, err := users.Login(database, hp, password)
-	if err != nil {
-		return ""
-	} else if !success {
-		return ""
-	} else {
-		return loggedIn.Nama
-	}
+	return users.Login(database, hp, password)
 }
 
 func Register() (bool, error) {
