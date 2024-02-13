@@ -8,19 +8,24 @@ import (
 
 var database = config.InitMysql()
 
-func menuLibrary(user string) {
+func menuAccountService(user string) {
 	fmt.Println("Selamat Datang,", user)
 	var input int
 	for input != 99 {
 		fmt.Println("Pilih menu")
-		fmt.Println("1. Lihat Daftar Buku")
-		fmt.Println("2. Penjam Barang")
-		fmt.Println("3. eefefefes")
+		fmt.Println("1. Account")
+		fmt.Println("2. Update Account")
+		fmt.Println("3. Delete Account")
+		fmt.Println("4. Top-Up")
+		fmt.Println("5. Transfer")
+		fmt.Println("6. History Top-Up")
+		fmt.Println("7. History Transfer")
+		fmt.Println("8. All User")
 		fmt.Println("99. Logout")
 		fmt.Print("Masukkan pilihan:")
 		fmt.Scanln(&input)
 	}
-	fmt.Println("Selamat Tinggal,", user)
+	fmt.Println("Terima kasih telah bertransaksi,", user)
 }
 
 func main() {
@@ -28,21 +33,13 @@ func main() {
 	var input int
 	for input != 99 {
 		fmt.Println("Pilih menu")
-		fmt.Println("1. Login")
-		fmt.Println("2. Register")
+		fmt.Println("1. Register")
+		fmt.Println("2. Login")
 		fmt.Println("99. Exit")
 		fmt.Print("Masukkan pilihan:")
 		fmt.Scanln(&input)
 		switch input {
 		case 1:
-			user := login()
-			if user == "" {
-				fmt.Println("Login Gagal!!")
-			} else {
-				menuLibrary(user)
-			}
-
-		case 2:
 			success, err := Register()
 			if err != nil {
 				fmt.Println("terjadi kesalahan(tidak bisa mendaftarkan pengguna)", err.Error())
@@ -50,6 +47,13 @@ func main() {
 
 			if success {
 				fmt.Println("selamat anda telah terdaftar")
+			}
+		case 2:
+			user := login()
+			if user == "" {
+				fmt.Println("Login Gagal!!")
+			} else {
+				menuAccountService(user)
 			}
 		}
 	}
