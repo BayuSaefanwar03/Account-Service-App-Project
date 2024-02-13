@@ -8,12 +8,12 @@ import (
 
 var database = config.InitMysql()
 
-func menuAccountService(user string) {
-	fmt.Println("Selamat Datang,", user)
+func menuAccountService(user users.Users) {
+	fmt.Println("Saldo anda sekarang:", user.Saldo)
 	var input int
 	for input != 99 {
 		fmt.Println("Pilih menu")
-		fmt.Println("1. Account")
+		fmt.Println("1. View Account")
 		fmt.Println("2. Update Account")
 		fmt.Println("3. Delete Account")
 		fmt.Println("4. Top-Up")
@@ -24,6 +24,23 @@ func menuAccountService(user string) {
 		fmt.Println("99. Logout")
 		fmt.Print("Masukkan pilihan:")
 		fmt.Scanln(&input)
+		switch input {
+		case 1:
+			fmt.Println("ID:", user.ID)
+			fmt.Println("Nama:", user.Nama)
+			fmt.Println("No Telp:", user.HP)
+			fmt.Println("Alamat:", user.Alamat)
+			fmt.Println("Account Created at:", user.CreatedAt)
+			fmt.Println("Account Updated at:", user.UpdatedAt)
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
+		}
+
 	}
 	fmt.Println("Terima kasih telah bertransaksi,", user)
 }
