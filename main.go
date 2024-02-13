@@ -68,11 +68,13 @@ func login() string {
 	fmt.Scanln(&hp)
 	fmt.Print("Masukkan Password : ")
 	fmt.Scanln(&password)
-	loggedIn, err := users.Login(database, hp, password)
-	if err == nil {
-		return loggedIn.Nama
-	} else {
+	loggedIn, success, err := users.Login(database, hp, password)
+	if err != nil {
 		return ""
+	} else if !success {
+		return ""
+	} else {
+		return loggedIn.Nama
 	}
 }
 
