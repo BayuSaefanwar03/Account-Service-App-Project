@@ -3,12 +3,13 @@ package main
 import (
 	"fmt"
 	"project1/config"
+	"project1/data"
 	"project1/users"
 )
 
 var database = config.InitMysql()
 
-func menuAccountService(user users.Users) {
+func menuAccountService(user data.Users) {
 	fmt.Println("Saldo anda :", user.Saldo)
 	var input int
 	for input != 99 {
@@ -79,7 +80,7 @@ func main() {
 
 }
 
-func login() (users.Users, bool, error) {
+func login() (data.Users, bool, error) {
 	var hp string
 	var password string
 	fmt.Print("Masukkan HP : ")
@@ -90,7 +91,7 @@ func login() (users.Users, bool, error) {
 }
 
 func Register() (bool, error) {
-	var newUser users.Users
+	var newUser data.Users
 	fmt.Print("Masukkan nama     : ")
 	fmt.Scanln(&newUser.Nama)
 	fmt.Print("Masukkan nomor HP : ")
