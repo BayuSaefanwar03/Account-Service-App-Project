@@ -1,6 +1,10 @@
 package users
 
-import "gorm.io/gorm"
+import (
+	"project1/topup"
+
+	"gorm.io/gorm"
+)
 
 type Users struct {
 	gorm.Model
@@ -9,6 +13,7 @@ type Users struct {
 	Password string
 	Alamat   string
 	Saldo    int
+	Topup    []topup.Topup `gorm:"foreignKey:HP"`
 }
 
 func (u *Users) GantiPassword(connection *gorm.DB, newPassword string) (bool, error) {

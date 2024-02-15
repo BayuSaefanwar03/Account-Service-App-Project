@@ -3,15 +3,16 @@ package main
 import (
 	"fmt"
 	"project1/config"
+	"project1/topup"
 	"project1/users"
 )
 
 var database = config.InitMysql()
 
 func menuAccountService(user users.Users) {
-	fmt.Println("Saldo anda :", user.Saldo)
 	var input int
 	for input != 99 {
+		fmt.Println("Saldo anda :", user.Saldo)
 		fmt.Println("Pilih menu")
 		fmt.Println("1. View Account")
 		fmt.Println("2. Update Account")
@@ -35,6 +36,17 @@ func menuAccountService(user users.Users) {
 		case 2:
 		case 3:
 		case 4:
+			nominal, success, err := Topup(user)
+
+			if err != nil {
+				fmt.Println("Terjadi kesalahan :", err)
+
+			} else if !success {
+				fmt.Println("Anda tidak berhasil topup")
+			} else {
+				fmt.Println("Selamat anda berhasil topup")
+				user.Saldo += nominal
+			}
 		case 5:
 		case 6:
 		case 7:
@@ -100,4 +112,15 @@ func Register() (bool, error) {
 	fmt.Print("Masukkan alamat   : ")
 	fmt.Scanln(&newUser.Alamat)
 	return users.Register(database, newUser)
+}
+
+func Topup(user users.Users) (int, bool, error) {
+	var nominal int
+	var user_topup topup.Users
+	user_topup.HP = user.HP
+	user_topup.Saldo = user.Saldo
+	fmt.Print("masukan nominal : ")
+	fmt.Scanln(&nominal)
+	success, err := topup.Newtopup(database, user_topup, nominal)
+	return nominal, success, err
 }
