@@ -69,7 +69,7 @@ func menuAccountService(user data.Users) {
 		case 8:
 		}
 	}
-	fmt.Println("Terima kasih telah bertransaksi,", user)
+	fmt.Println("Terima kasih telah bertransaksi,")
 }
 
 func main() {
