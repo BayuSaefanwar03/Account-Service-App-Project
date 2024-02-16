@@ -3,15 +3,17 @@ package main
 import (
 	"fmt"
 	"project1/config"
+	"project1/data"
+	"project1/transfer"
 	"project1/users"
 )
 
 var database = config.InitMysql()
 
-func menuAccountService(user users.Users) {
-	fmt.Println("Saldo anda :", user.Saldo)
+func menuAccountService(user data.Users) {
 	var input int
 	for input != 99 {
+		fmt.Println("Saldo anda :", user.Saldo)
 		fmt.Println("Pilih menu")
 		fmt.Println("1. View Account")
 		fmt.Println("2. Update Account")
@@ -36,8 +38,19 @@ func menuAccountService(user users.Users) {
 		case 3:
 		case 4:
 		case 5:
+			err := Send(user)
+			if err != nil {
+				fmt.Println("Terjadi Error:", err.Error())
+			} else {
+				fmt.Println("Selamat anda berhasil trasfer :)")
+			}
 		case 6:
 		case 7:
+			result := transfer.HistoryTransfer(database, user)
+			fmt.Printf("%14s|%10s\n", "Penerima", "nominal")
+			for i := 0; i < len(result); i++ {
+				fmt.Printf("%14s|%10d\n", result[i].HP_Penerima, result[i].Nominal)
+			}
 		case 8:
 		}
 	}
@@ -47,6 +60,9 @@ func menuAccountService(user users.Users) {
 func main() {
 	config.Migrate(database)
 	var input int
+	if result := test(); result {
+		input = 99
+	}
 	for input != 99 {
 		fmt.Println("Pilih menu")
 		fmt.Println("1. Register")
@@ -79,7 +95,7 @@ func main() {
 
 }
 
-func login() (users.Users, bool, error) {
+func login() (data.Users, bool, error) {
 	var hp string
 	var password string
 	fmt.Print("Masukkan HP : ")
@@ -90,7 +106,7 @@ func login() (users.Users, bool, error) {
 }
 
 func Register() (bool, error) {
-	var newUser users.Users
+	var newUser data.Users
 	fmt.Print("Masukkan nama     : ")
 	fmt.Scanln(&newUser.Nama)
 	fmt.Print("Masukkan nomor HP : ")
@@ -100,4 +116,19 @@ func Register() (bool, error) {
 	fmt.Print("Masukkan alamat   : ")
 	fmt.Scanln(&newUser.Alamat)
 	return users.Register(database, newUser)
+}
+
+func Send(user data.Users) error {
+	var hp string
+	var nominal int
+	fmt.Print("Masukkan HP Tujuan : ")
+	fmt.Scanln(&hp)
+	fmt.Print("Masukkan Nominal : ")
+	fmt.Scanln(&nominal)
+	return transfer.Send(database, user, hp, nominal)
+}
+
+func test() bool {
+	transfer.HistoryTransfer(database, data.Users{HP: "081"})
+	return false
 }
