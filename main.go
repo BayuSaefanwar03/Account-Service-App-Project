@@ -37,10 +37,8 @@ func menuAccountService(user users.Users) {
 		case 3:
 		case 4:
 			nominal, success, err := Topup(user)
-
 			if err != nil {
 				fmt.Println("Terjadi kesalahan :", err)
-
 			} else if !success {
 				fmt.Println("Anda tidak berhasil topup")
 			} else {
@@ -49,6 +47,12 @@ func menuAccountService(user users.Users) {
 			}
 		case 5:
 		case 6:
+			success, err := HistoryTopup(user)
+			if err != nil {
+				fmt.Println("Terjadi Kesalahan :", err)
+			} else if !success {
+				fmt.Println("Tidak Bisa Menampilkan :", success)
+			}
 		case 7:
 		case 8:
 		}
@@ -123,4 +127,19 @@ func Topup(user users.Users) (int, bool, error) {
 	fmt.Scanln(&nominal)
 	success, err := topup.Newtopup(database, user_topup, nominal)
 	return nominal, success, err
+}
+
+func HistoryTopup(user users.Users) (bool, error) {
+	var user_topup topup.Users
+	var history topup.Topup
+	history.HP = user.HP
+
+	// for _ , history := range
+	// {
+	fmt.Println("nomor Hp Anda :", history.HP)
+
+	// }
+
+	success, err := topup.HistoryTopup(database, user_topup)
+	return success, err
 }
