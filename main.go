@@ -5,6 +5,7 @@ import (
 	"project1/config"
 	"project1/data"
 	"project1/topup"
+	"project1/transfer"
 	"project1/users"
 )
 
@@ -47,6 +48,12 @@ func menuAccountService(user data.Users) {
 				user.Saldo += nominal
 			}
 		case 5:
+			err := Send(user)
+			if err != nil {
+				fmt.Println("Terjadi Error:", err.Error())
+			} else {
+				fmt.Println("Selamat anda berhasil trasfer :)")
+			}
 		case 6:
 			result := topup.HistoryTopup(database, user)
 			fmt.Printf("%14s|%10s|%s\n", "Penerima", "nominal", "waktu")
@@ -54,6 +61,11 @@ func menuAccountService(user data.Users) {
 				fmt.Printf("%14s|%10d|%s\n", result[i].HP, result[i].Nominal, result[i].CreatedAt)
 			}
 		case 7:
+			result := transfer.HistoryTransfer(database, user)
+			fmt.Printf("%14s|%10s\n", "Penerima", "nominal")
+			for i := 0; i < len(result); i++ {
+				fmt.Printf("%14s|%10d\n", result[i].HP_Penerima, result[i].Nominal)
+			}
 		case 8:
 		}
 	}
@@ -63,6 +75,9 @@ func menuAccountService(user data.Users) {
 func main() {
 	config.Migrate(database)
 	var input int
+	if result := test(); result {
+		input = 99
+	}
 	for input != 99 {
 		fmt.Println("Pilih menu")
 		fmt.Println("1. Register")
@@ -118,10 +133,30 @@ func Register() (bool, error) {
 	return users.Register(database, newUser)
 }
 
+func Updata_Account() error {
+
+	return nil
+}
+
 func Topup(user data.Users) (int, bool, error) {
 	var nominal int
 	fmt.Print("masukan nominal : ")
 	fmt.Scanln(&nominal)
 	success, err := topup.Newtopup(database, user, nominal)
 	return nominal, success, err
+}
+
+func Send(user data.Users) error {
+	var hp string
+	var nominal int
+	fmt.Print("Masukkan HP Tujuan : ")
+	fmt.Scanln(&hp)
+	fmt.Print("Masukkan Nominal : ")
+	fmt.Scanln(&nominal)
+	return transfer.Send(database, user, hp, nominal)
+}
+
+func test() bool {
+	transfer.HistoryTransfer(database, data.Users{HP: "081"})
+	return false
 }
