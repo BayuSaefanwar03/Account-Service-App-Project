@@ -1,22 +1,13 @@
 package topup
 
 import (
+	"project1/data"
+
 	"gorm.io/gorm"
 )
 
-type Topup struct {
-	gorm.Model
-	HP      string
-	Nominal int
-}
-
-type Users struct {
-	HP    string
-	Saldo int
-}
-
-func Newtopup(connection *gorm.DB, user Users, nominal int) (bool, error) {
-	err := connection.Create(&Topup{HP: user.HP, Nominal: nominal}).Error
+func Newtopup(connection *gorm.DB, user data.Users, nominal int) (bool, error) {
+	err := connection.Create(&data.Topup{HP: user.HP, Nominal: nominal}).Error
 	if err != nil {
 		return false, err
 	} else {
@@ -30,7 +21,7 @@ func Newtopup(connection *gorm.DB, user Users, nominal int) (bool, error) {
 
 }
 
-func HistoryTopup(connection *gorm.DB, user Users) (bool, error) {
+func HistoryTopup(connection *gorm.DB, user data.Users) (bool, error) {
 	err := connection.Where("hp = ?", user.HP).First(user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -39,7 +30,7 @@ func HistoryTopup(connection *gorm.DB, user Users) (bool, error) {
 		return false, err
 	}
 	var count int64
-	err = connection.Model(&Topup{}).Where("hp = ?", user.HP).Count(&count).Error
+	err = connection.Model(&data.Topup{}).Where("hp = ?", user.HP).Count(&count).Error
 	if err != nil {
 		return false, err
 	}

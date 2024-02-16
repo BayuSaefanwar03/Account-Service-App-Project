@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"project1/config"
+	"project1/data"
 	"project1/topup"
 	"project1/users"
 )
 
 var database = config.InitMysql()
 
-func menuAccountService(user users.Users) {
+func menuAccountService(user data.Users) {
 	var input int
 	for input != 99 {
 		fmt.Println("Saldo anda :", user.Saldo)
@@ -95,7 +96,7 @@ func main() {
 
 }
 
-func login() (users.Users, bool, error) {
+func login() (data.Users, bool, error) {
 	var hp string
 	var password string
 	fmt.Print("Masukkan HP : ")
@@ -106,7 +107,7 @@ func login() (users.Users, bool, error) {
 }
 
 func Register() (bool, error) {
-	var newUser users.Users
+	var newUser data.Users
 	fmt.Print("Masukkan nama     : ")
 	fmt.Scanln(&newUser.Nama)
 	fmt.Print("Masukkan nomor HP : ")
@@ -118,20 +119,17 @@ func Register() (bool, error) {
 	return users.Register(database, newUser)
 }
 
-func Topup(user users.Users) (int, bool, error) {
+func Topup(user data.Users) (int, bool, error) {
 	var nominal int
-	var user_topup topup.Users
-	user_topup.HP = user.HP
-	user_topup.Saldo = user.Saldo
 	fmt.Print("masukan nominal : ")
 	fmt.Scanln(&nominal)
-	success, err := topup.Newtopup(database, user_topup, nominal)
+	success, err := topup.Newtopup(database, user, nominal)
 	return nominal, success, err
 }
 
-func HistoryTopup(user users.Users) (bool, error) {
-	var user_topup topup.Users
-	var history topup.Topup
+func HistoryTopup(user data.Users) (bool, error) {
+	var user_topup data.Users
+	var history data.Topup
 	history.HP = user.HP
 
 	// for _ , history := range
