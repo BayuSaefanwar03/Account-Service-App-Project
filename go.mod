@@ -1,4 +1,4 @@
-module project1
+module Account-Service
 
 go 1.21.6
 

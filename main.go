@@ -1,162 +1,326 @@
 package main
 
 import (
+	"Account-Service/src/data"
+	"Account-Service/src/database"
+	"Account-Service/src/handle"
+	"Account-Service/src/topup"
+	"Account-Service/src/transfer"
+	"Account-Service/src/users"
 	"fmt"
-	"project1/config"
-	"project1/data"
-	"project1/topup"
-	"project1/transfer"
-	"project1/users"
+	"time"
 )
 
-var database = config.InitMysql()
-
-func menuAccountService(user data.Users) {
-	var input int
-	for input != 99 {
-		fmt.Println("Saldo anda :", user.Saldo)
-		fmt.Println("Pilih menu")
-		fmt.Println("1. View Account")
-		fmt.Println("2. Update Account")
-		fmt.Println("3. Delete Account")
-		fmt.Println("4. Top-Up")
-		fmt.Println("5. Transfer")
-		fmt.Println("6. History Top-Up")
-		fmt.Println("7. History Transfer")
-		fmt.Println("8. All User")
-		fmt.Println("99. Logout")
-		fmt.Print("Masukkan pilihan:")
-		fmt.Scanln(&input)
-		switch input {
-		case 1:
-			fmt.Println("ID: ", user.ID)
-			fmt.Println("Nama: ", user.Nama)
-			fmt.Println("No Hp: ", user.HP)
-			fmt.Println("Alamat: ", user.Alamat)
-			fmt.Println("Created account: ", user.CreatedAt)
-			fmt.Println("Updated account: ", user.UpdatedAt)
-		case 2:
-		case 3:
-		case 4:
-			nominal, success, err := Topup(user)
-			if err != nil {
-				fmt.Println("Terjadi kesalahan :", err)
-			} else if !success {
-				fmt.Println("Anda tidak berhasil topup")
-			} else {
-				fmt.Println("Selamat anda berhasil topup")
-				user.Saldo += nominal
-			}
-		case 5:
-			err := Send(user)
-			if err != nil {
-				fmt.Println("Terjadi Error:", err.Error())
-			} else {
-				fmt.Println("Selamat anda berhasil trasfer :)")
-			}
-		case 6:
-			result := topup.HistoryTopup(database, user)
-			fmt.Printf("%14s|%10s|%s\n", "Penerima", "nominal", "waktu")
-			for i := 0; i < len(result); i++ {
-				fmt.Printf("%14s|%10d|%s\n", result[i].HP, result[i].Nominal, result[i].CreatedAt)
-			}
-		case 7:
-			result := transfer.HistoryTransfer(database, user)
-			fmt.Printf("%14s|%10s\n", "Penerima", "nominal")
-			for i := 0; i < len(result); i++ {
-				fmt.Printf("%14s|%10d\n", result[i].HP_Penerima, result[i].Nominal)
-			}
-		case 8:
-		}
-	}
-	fmt.Println("Terima kasih telah bertransaksi,")
-}
+var db = database.InitMysql()
 
 func main() {
-	config.Migrate(database)
+	database.Migrate(db)
 	var input int
-	if result := test(); result {
-		input = 99
-	}
+
 	for input != 99 {
-		fmt.Println("Pilih menu")
-		fmt.Println("1. Register")
-		fmt.Println("2. Login")
-		fmt.Println("99. Exit")
-		fmt.Print("Masukkan pilihan:")
-		fmt.Scanln(&input)
+		fmt.Println("\n-----LOGIN-----")
+		fmt.Println(" [1] Login")
+		fmt.Println(" [2] Register")
+		fmt.Println(" [3] Forget Password")
+		fmt.Println("[99] Exit")
+		fmt.Print("==> ")
+		handle.ScanInt(&input)
+		fmt.Println("")
 		switch input {
 		case 1:
-			success, err := Register()
-			if err != nil {
-				fmt.Println("terjadi kesalahan(tidak bisa mendaftarkan pengguna)", err.Error())
-			}
-
-			if success {
-				fmt.Println("selamat anda telah terdaftar")
+			if user, success := Login(); success {
+				accountService(user)
 			}
 		case 2:
-			user, success, err := login()
-			if err != nil {
-				fmt.Println("Terjadi Error:", err.Error())
-			} else if !success {
-				fmt.Println("No HP/Password salah!")
-			} else {
-				fmt.Println("Selamat datang,", user.Nama)
-				menuAccountService(user)
-			}
+			Register()
+		case 3:
+		case 99:
+		default:
+			fmt.Println("[Error] Wrong Input")
 		}
 	}
-
+	fmt.Println("Thnk u for coming & Goodbye :)")
 }
 
-func login() (data.Users, bool, error) {
-	var hp string
-	var password string
-	fmt.Print("Masukkan HP : ")
-	fmt.Scanln(&hp)
-	fmt.Print("Masukkan Password : ")
-	fmt.Scanln(&password)
-	return users.Login(database, hp, password)
+func accountService(user *data.Users) {
+	fmt.Println("\nWelcome,", user.Nama)
+	var input int
+	for input != 99 {
+		fmt.Printf("\nSaldo : Rp.%s\n", handle.ToRP(user.Saldo))
+		fmt.Println("-----HOME-----")
+		fmt.Println(" [1] View Profile")
+		fmt.Println(" [2] Update Profile")
+		fmt.Println(" [3] Delete Account")
+		fmt.Println(" [4] Topup")
+		fmt.Println(" [5] Transfer")
+		fmt.Println(" [6] History Topup")
+		fmt.Println(" [7] History Trasfer")
+		fmt.Println(" [8] View Profile Other User")
+		fmt.Println("[99] Logout")
+		fmt.Print("==> ")
+		handle.ScanInt(&input)
+		fmt.Println("")
+		switch input {
+		case 1:
+			View_Profile(*user, true)
+		case 2:
+			Update_Profile(user)
+		case 3:
+			if do := Delete_Account(*user); do {
+				input = 99
+			}
+		case 4:
+			Topup(user)
+		case 5:
+			Transfer(user)
+		case 6:
+			Topup_History(*user)
+		case 7:
+			Transfer_History(*user)
+		case 8:
+			View_Other_Profile()
+		case 99:
+		default:
+			fmt.Println("[Error] Wrong Input")
+		}
+	}
+	fmt.Println("Goodbye", user.Nama)
 }
 
-func Register() (bool, error) {
-	var newUser data.Users
-	fmt.Print("Masukkan nama     : ")
-	fmt.Scanln(&newUser.Nama)
-	fmt.Print("Masukkan nomor HP : ")
-	fmt.Scanln(&newUser.HP)
-	fmt.Print("Masukkan password : ")
-	fmt.Scanln(&newUser.Password)
-	fmt.Print("Masukkan alamat   : ")
-	fmt.Scanln(&newUser.Alamat)
-	return users.Register(database, newUser)
+func Login() (*data.Users, bool) {
+	var hp, password string
+	fmt.Println("|--[LOGIN]")
+	fmt.Print("|--> HP : ")
+	handle.Scan(&hp)
+	fmt.Print("|--> Password : ")
+	handle.Scan(&password)
+
+	user, err := users.Login(db, hp, password)
+	if err != nil {
+		fmt.Println("[Error]", err)
+		return &data.Users{}, false
+	} else if user.Nama == "" {
+		fmt.Println("[Error] Invalid HP or Password")
+		return &data.Users{}, false
+	} else {
+		return &user, true
+	}
 }
 
-func Updata_Account() error {
+func Register() {
+	var user data.Users
+	fmt.Println("|--[Register]")
+	fmt.Print("|--> Name : ")
+	handle.Scan(&user.Nama)
+	fmt.Print("|--> No HP : ")
+	handle.Scan(&user.HP)
+	fmt.Print("|--> Password : ")
+	handle.Scan(&user.Password)
+	fmt.Print("|--> Address : ")
+	handle.Scan(&user.Alamat)
+	user.CreatedAt = time.Time{}
+	user.UpdatedAt = time.Time{}
 
-	return nil
+	success, err := users.Register(db, user)
+	if err != nil {
+		fmt.Println("[Error]", err)
+	} else if !success {
+		fmt.Println("[Error] The cellphone number is registered")
+	} else {
+		fmt.Println("Account successfully registered :)")
+	}
 }
 
-func Topup(user data.Users) (int, bool, error) {
-	var nominal int
-	fmt.Print("masukan nominal : ")
-	fmt.Scanln(&nominal)
-	success, err := topup.Newtopup(database, user, nominal)
-	return nominal, success, err
+func View_Profile(user data.Users, access bool) {
+	if access {
+		fmt.Println("|--[View Profile]")
+	} else {
+		fmt.Printf("|--[See %s's Profile]\n", user.Nama)
+	}
+	fmt.Println("|--> Name         :", user.Nama)
+	fmt.Println("|--> Phone Number :", user.HP)
+	fmt.Println("|--> Address      :", user.Alamat)
+	if access {
+		fmt.Println("|--> Create At    :", user.CreatedAt.Format("01/02/2006 03:04:05"))
+		fmt.Println("|--> Last Update  :", user.UpdatedAt.Format("01/02/2006 03:04:05"))
+	}
 }
 
-func Send(user data.Users) error {
-	var hp string
-	var nominal int
-	fmt.Print("Masukkan HP Tujuan : ")
-	fmt.Scanln(&hp)
-	fmt.Print("Masukkan Nominal : ")
-	fmt.Scanln(&nominal)
-	return transfer.Send(database, user, hp, nominal)
+func Update_Profile(user *data.Users) {
+	var input int
+	var user_old = *user
+	fmt.Println("|--[Edit Profile]")
+	fmt.Println("|--[1] Name")
+	fmt.Println("|--[2] Phone Number")
+	fmt.Println("|--[3] Address")
+	fmt.Println("|--[4] Password")
+	fmt.Println("Press [Enter] to exit")
+	fmt.Print("==> ")
+	handle.ScanInt(&input)
+	fmt.Println("")
+	switch input {
+	case 1:
+		fmt.Print("Name --> ")
+		handle.Scan(&user.Nama)
+	case 2:
+		fmt.Print("HP --> ")
+		handle.Scan(&user.HP)
+	case 3:
+		fmt.Print("Address --> ")
+		handle.Scan(&user.Alamat)
+	case 4:
+		fmt.Print("Password --> ")
+		handle.Scan(&user.Password)
+	case 0:
+		return
+	}
+	if user.Nama == "" || user.HP == "" || user.Alamat == "" {
+		fmt.Println("[Error] Empty is prohibited")
+		*user = user_old
+	} else {
+		user.UpdatedAt = time.Time{}
+		success, err := users.Update(db, user_old, *user)
+		if err != nil {
+			fmt.Println("[Error]", err)
+		} else if !success {
+			fmt.Println("[Error] Failed to change profile")
+		} else {
+			fmt.Println("Successfully changed profile")
+		}
+	}
 }
 
-func test() bool {
-	transfer.HistoryTransfer(database, data.Users{HP: "081"})
+func Delete_Account(user data.Users) bool {
+	var input int
+	fmt.Println("|--[Delete Profile]")
+	fmt.Println("| Are you sure? don't leave me :(")
+	fmt.Println("|--[1] Yes :(")
+	fmt.Println("|--[2] No")
+	fmt.Print("==> ")
+	handle.ScanInt(&input)
+	fmt.Println("")
+	switch input {
+	case 1:
+		success, err := users.Delete(db, user)
+		if err != nil {
+			fmt.Println("[Error]", err)
+		} else if !success {
+			fmt.Println("[Error] Failed to delete account")
+		} else {
+			fmt.Println(user.Nama, "Nooooo...... ˃⌓ <")
+			return true
+		}
+	case 2:
+		fmt.Println("Hooray... :)")
+	case 0:
+		return false
+	}
 	return false
+}
+
+func Topup(user *data.Users) {
+	var nominal int
+	fmt.Println("|--[Topup saldo]")
+	fmt.Println("|")
+	fmt.Println("| press [enter] to cancel")
+	fmt.Println("|--Nominal :")
+	fmt.Print("|--> Rp.")
+	handle.ScanInt(&nominal)
+	fmt.Println("")
+	if nominal < 0 {
+		fmt.Println("[Error] Nominal cannot be less than zero")
+		return
+	} else if nominal == 0 {
+		fmt.Println("Cencel")
+		return
+	}
+
+	success, err := topup.Topup(db, user, nominal)
+	if err != nil {
+		fmt.Println("[Error]", err)
+	} else if !success {
+		fmt.Println("[Error] Failed to add saldo")
+	} else {
+		fmt.Println("Successfully added")
+	}
+}
+
+func Topup_History(user data.Users) {
+	data := topup.HistoryTopup(db, user)
+
+	if len(data) == 0 {
+		fmt.Println("No topup history")
+	}
+
+	for i := 0; i < len(data); i++ {
+		if i == 0 {
+			fmt.Printf("|%-2s|%-10s|%-19s|\n", "ID", "Nominal", "Date")
+		}
+		fmt.Printf("|%-2d|%-10d|%-19s|\n", data[i].TopupID, data[i].Nominal, data[i].CreatedAt.Format("01/02/2006 03:04:05"))
+	}
+}
+
+func Transfer(user *data.Users) {
+	var to string
+	var nominal int
+	fmt.Println("|--[Transfer]")
+	fmt.Print("|--> To : ")
+	handle.Scan(&to)
+	fmt.Print("|--> Rp.")
+	handle.ScanInt(&nominal)
+	fmt.Println("")
+
+	if to == user.HP {
+		fmt.Println("[Error] Can't send to yourself")
+		return
+	} else if nominal <= 0 {
+		fmt.Println("[Error] Nominal cannot be less than one")
+		return
+	} else if nominal > user.Saldo {
+		fmt.Println("[Error] Nominal > Your Saldo")
+		return
+	}
+	receiver, _ := users.View(db, to)
+	if receiver.Nama == "" {
+		fmt.Println("[Error] The recipient's cellphone number was not found")
+		return
+	}
+
+	err := transfer.Send(db, user, receiver, nominal)
+	if err != nil {
+		fmt.Println("[Error]", err)
+	} else {
+		fmt.Println("Successfully saldo transfer")
+	}
+}
+
+func Transfer_History(user data.Users) {
+	data := transfer.HistoryTransfer(db, user)
+
+	if len(data) == 0 {
+		fmt.Println("No topup history")
+	}
+
+	for i := 0; i < len(data); i++ {
+		if i == 0 {
+			fmt.Printf("|%-3s|%-14s|%-14s|%-10s|%-19s|\n", "ID", "Sender", "Receiver", "Nominal", "Date")
+		}
+		fmt.Printf("|%-3d|%-14s|%-14s|%-10d|%-19s|\n", data[i].TransferID, data[i].HP_Penerima, data[i].HP_Penerima, data[i].Nominal, data[i].CreatedAt.Format("01/02/2006 03:04:05"))
+	}
+}
+
+func View_Other_Profile() {
+	var hp string
+	fmt.Println("|--[View Profile Other User]")
+	fmt.Print("|--> No Hp : ")
+	handle.Scan(&hp)
+	fmt.Println("")
+
+	receiver, _ := users.View(db, hp)
+	if receiver.Nama == "" {
+		fmt.Println("[Error] The recipient's cellphone number was not found")
+		return
+	}
+
+	View_Profile(receiver, false)
 }

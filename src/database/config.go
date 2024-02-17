@@ -1,8 +1,8 @@
-package config
+package database
 
 import (
+	"Account-Service/src/data"
 	"fmt"
-	"project1/data"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -19,6 +19,6 @@ func InitMysql() *gorm.DB {
 }
 
 func Migrate(connection *gorm.DB) error {
-	err := connection.AutoMigrate(&data.Users{}, &data.Transfer{}, &data.Topup{})
+	err := connection.AutoMigrate(&data.Users{}, &data.Topup{}, &data.Transfer{})
 	return err
 }
