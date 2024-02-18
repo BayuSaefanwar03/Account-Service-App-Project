@@ -303,9 +303,9 @@ func Transfer_History(user data.Users) {
 
 	for i := 0; i < len(data); i++ {
 		if i == 0 {
-			fmt.Printf("|%-3s|%-14s|%-14s|%-10s|%-19s|\n", "ID", "Sender", "Receiver", "Nominal", "Date")
+			fmt.Printf("|%-2s|%-6s|%-8s|%-7s|%-19s|\n", "ID", "Sender", "Receiver", "Nominal", "Date")
 		}
-		fmt.Printf("|%-3d|%-14s|%-14s|%-10d|%-19s|\n", data[i].TransferID, data[i].HP_Penerima, data[i].HP_Penerima, data[i].Nominal, data[i].CreatedAt.Format("01/02/2006 03:04:05"))
+		fmt.Printf("|%-2d|%-6s|%-8s|%-7d|%-19s|\n", data[i].TransferID, data[i].HP_Pengirim, data[i].HP_Penerima, data[i].Nominal, data[i].CreatedAt.Format("01/02/2006 03:04:05"))
 	}
 }
 
